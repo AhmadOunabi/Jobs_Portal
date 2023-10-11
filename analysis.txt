@@ -1,0 +1,16 @@
+1-Jobs DataBase 
+ .      Job Category --- Extra Model
+ . Job Type --- dropdown
+ . Job Location 
+ . Experience 
+ . Create Date
+ . Salaries
+ . Company name
+ . company Logo
+ . Job Title
+ . Location
+ . Description
+
+
+
+ 
