@@ -1,12 +1,14 @@
+import datetime
 from django.shortcuts import render
 from django.views import generic
-from .models import Jobs,Category
+from .models import Jobs,Category,UserToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import exceptions
+from rest_framework.authentication import get_authorization_header
 from .serializers import UserSerializer
 from django.contrib.auth.models import User
-from .token_generator import create_access_token,create_refresh_token
+from .token_generator import create_access_token,create_refresh_token,decode_access_token,decode_refresh_token
 # Create your views here.
 
 class ProductList(generic.ListView):
@@ -36,10 +38,57 @@ class LoginAPIVIEW(APIView):
         
         access_token= create_access_token(user.id)
         refresh_token= create_refresh_token(user.id)
+        UserToken.objects.create(
+            user_id=user.id,
+            token=refresh_token,
+            exp_date= datetime.datetime.now() + datetime.timedelta(days=7)
+        )
+        
         response=Response()
         
         response.set_cookie(key='refresh_token', value=refresh_token, httponly=True)
         response.data={'token':access_token}
+        return response
+
+
+class UserAPIVIEW(APIView):
+    def get(self,request):
+        auth=get_authorization_header(request).split()
+        if auth and len(auth)==2:
+            token=auth[1].decode('utf-8')
+            id= decode_access_token(token)
+            user=User.objects.get(pk=id)
+            if user:
+                serializer=UserSerializer(user)
+                return Response(serializer.data)
+        raise exceptions.AuthenticationFailed('unauthenticated')
+
+
+class RefreshAPIVIEW(APIView):
+    def post(self,request):
+        token=request.COOKIES.get('refresh_token')
+        id= decode_refresh_token(token)
+        user=User.objects.get(pk=id)
+        if not UserToken.objects.filter(user_id=id,
+                                        token=token,
+                                        exp_date__gt=datetime.datetime.now()
+                                        ).exists():
+            raise exceptions.AuthenticationFailed('Unauthenticated')
+        if user:
+            access_token=create_access_token(id)
+            response=Response()
+            response.data={'token':access_token}
+            return response
+
+class LogoutAPIVIEW(APIView):
+    def post(self,request):
+        token=request.COOKIES.get('refresh_token')
+        UserToken.objects.filter(token=token).delete()
+        response=Response()
+        response.delete_cookie(key='refresh_token')
+        response.data={
+            'message':'logged out successfully'
+        }
         return response
         
         

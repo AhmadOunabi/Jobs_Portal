@@ -37,3 +37,11 @@ class Jobs(models.Model):
     
     def __str__(self):
         return self.title
+
+class UserToken(models.Model):
+    user_id=models.CharField(max_length=255)
+    token=models.CharField(max_length=2000)
+    start_date=models.DateTimeField(auto_now_add=True)
+    exp_date=models.DateTimeField()
+    def __str__(self):
+        return self.user_id
