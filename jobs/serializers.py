@@ -1,5 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from django.contrib.auth.models import User
+from .models import UserProfile
 
 class UserSerializer(ModelSerializer):
     class Meta:
@@ -16,3 +17,8 @@ class UserSerializer(ModelSerializer):
             instance.set_password(password)
             instance.save()
             return(instance)
+
+class UserProfileSerializer(ModelSerializer):
+    class Meta:
+        model=UserProfile
+        fields='__all__'

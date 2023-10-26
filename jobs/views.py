@@ -1,12 +1,12 @@
 import datetime
 from django.shortcuts import render
 from django.views import generic
-from .models import Jobs,Category,UserToken
+from .models import Jobs,Category,UserToken,UserProfile
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import exceptions
 from rest_framework.authentication import get_authorization_header
-from .serializers import UserSerializer
+from .serializers import UserSerializer,UserProfileSerializer
 from django.contrib.auth.models import User
 from .token_generator import create_access_token,create_refresh_token,decode_access_token,decode_refresh_token
 # Create your views here.
@@ -90,5 +90,15 @@ class LogoutAPIVIEW(APIView):
             'message':'logged out successfully'
         }
         return response
+
+
+class UserProfileAPIVIEW(APIView):
+    def get(self,request):
+        token=request.COOKIES.get('refresh_token')
+        id= decode_refresh_token(token)
+        user=User.objects.get(pk=id)
+        profile=UserProfile.objects.get(user=user)
+        data=UserProfileSerializer(profile,context={'request':request}).data
+        return Response({'profile':data})
         
         

@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 # Create your models here.
 class Category(models.Model):
     category_name= models.CharField(max_length=50)
@@ -45,3 +46,13 @@ class UserToken(models.Model):
     exp_date=models.DateTimeField()
     def __str__(self):
         return self.user_id
+
+class UserProfile(models.Model):
+    user=models.OneToOneField(User,related_name='user_profile', on_delete=models.CASCADE)
+    first_name=models.CharField(max_length=50)
+    last_name=models.CharField(max_length=50)
+    last_name=models.CharField(max_length=50)
+    address=models.CharField(max_length=50)
+    telefon=models.CharField(max_length=50)
+    def __str__(self):
+        return self.first_name
