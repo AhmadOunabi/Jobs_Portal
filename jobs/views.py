@@ -101,4 +101,17 @@ class UserProfileAPIVIEW(APIView):
         data=UserProfileSerializer(profile,context={'request':request}).data
         return Response({'profile':data})
         
+class ProfileUpdateAPIVIEW(APIView):
+    def patch(self, request):
+        token = request.COOKIES.get('refresh_token')
+        id= decode_refresh_token(token)
+        user=User.objects.get(pk=id)
+        profile=UserProfile.objects.get(user=user)
+        data=request.data
+        profile.first_name= data['first_name']
+        profile.last_name= data['last_name']
+        profile.address= data['address']
+        profile.telefon= data['telefon']
+        profile.save()
+        return Response('UPDATED SUCCESSFULY')
         
